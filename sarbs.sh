@@ -140,7 +140,7 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 	git clone https://github.com/saqibmir1/dotfiles.git $HOME/dotfiles >/dev/null 2>&1
 
 	mv $HOME/dotfiles/.zshrc ~ >/dev/null 2>&1
-    mv $HOME/dotfiles/.config/neofetch ~/.config >/dev/null 2>&1
+        mv $HOME/dotfiles/.config/neofetch ~/.config >/dev/null 2>&1
 	mv $HOME/dotfiles/.config/neovim ~/.config >/dev/null 2>&1
 
 	}
