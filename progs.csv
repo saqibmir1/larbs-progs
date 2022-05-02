@@ -1,0 +1,23 @@
+ 
+#TAG,NAME IN REPO (or git url),PURPOSE (should be a verb phrase to sound right while installing)
+
+,plasma,"plasma is the desktop environment."
+,sddm,"sddm is a login manager."
+,konsole,"konsole is the terminal emulator."
+,android-tools,"adb, fastboot tools for phone-ratchoor."
+,bleachbit,"bleachbit is a cleaner program."
+,chromium,"browser for peasants."
+,htop,"htop is a terminal based task manager."
+,neofetch,"because why not."
+,man-db,"man-db for reading manual pages."
+,mpv,"mpv is a minimal video player."
+,ranger,"ranger is a cli based file manager."
+,telegram-desktop,"desktop telegram client."
+,zsh-syntax-highlighting,"a zsh syntax highlighter."
+,ark,"ark is a extracting tool by kde."
+,dolphin,"dolphin is a gui file manager."
+,gwenview,"gwenview is an image viewer."
+,okular,"okular is a pdf reader."
+,partitionmanager,"a gparted for kde."
+,spectacle,"is a screenshot tool."
+A,sublime-text-4,"sublime text is an ide for zoomers."
