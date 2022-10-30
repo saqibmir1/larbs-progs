@@ -1,11 +1,11 @@
 #!/bin/sh
 
+### OPTIONS AND VARIABLES ###
+
 dotfilesrepo="https://github.com/saqibmir1/dotfiles.git"
 progsfile="https://raw.githubusercontent.com/saqibmir1/SARBS/master/progs.csv"
 aurhelper="yay"
 repobranch="master"
-
-### FUNCTIONS ###
 
 installpkg() {
 	pacman --noconfirm --needed -S "$1" >/dev/null 2>&1
@@ -19,7 +19,7 @@ error() {
 
 welcomemsg() {
 	whiptail --title "Welcome!" \
-		--msgbox "Welcome to Saqib's Auto-Rice Bootstrapping Script!\\n\\nThis script will automatically install a fully-featured Linux desktop, which I use as my main machine.\\n\\n-Saqib" 10 60
+		--msgbox "Welcome to Luke's Auto-Rice Bootstrapping Script!\\n\\nThis script will automatically install a fully-featured Linux desktop, which I use as my main machine.\\n\\n-Luke" 10 60
 
 	whiptail --title "Important Note!" --yes-button "All ready!" \
 		--no-button "Return..." \
@@ -45,7 +45,7 @@ usercheck() {
 	! { id -u "$name" >/dev/null 2>&1; } ||
 		whiptail --title "WARNING" --yes-button "CONTINUE" \
 			--no-button "No wait..." \
-			--yesno "The user \`$name\` already exists on this system. LARBS can install for a user already existing, but it will OVERWRITE any conflicting settings/dotfiles on the user account.\\n\\nSARBS will NOT overwrite your user files, documents, videos, etc., so don't worry about that, but only click <CONTINUE> if you don't mind your settings being overwritten.\\n\\nNote also that LARBS will change $name's password to the one you just gave." 14 70
+			--yesno "The user \`$name\` already exists on this system. LARBS can install for a user already existing, but it will OVERWRITE any conflicting settings/dotfiles on the user account.\\n\\nLARBS will NOT overwrite your user files, documents, videos, etc., so don't worry about that, but only click <CONTINUE> if you don't mind your settings being overwritten.\\n\\nNote also that LARBS will change $name's password to the one you just gave." 14 70
 }
 
 preinstallmsg() {
@@ -67,11 +67,6 @@ adduserandpass() {
 	chown -R "$name":wheel "$(dirname "$repodir")"
 	echo "$name:$pass1" | chpasswd
 	unset pass1 pass2
-}
-
-refrestkeys(){
-  whiptail --infobox "Refreshing arch repos..." 7 49
-  pacman --noconfirm -S archlinux-keyring >/dev/null 2>&1
 }
 
 manualinstall() {
@@ -97,7 +92,7 @@ maininstall() {
 }
 
 aurinstall() {
-	whiptail --title "SARBS Installation" \
+	whiptail --title "LARBS Installation" \
 		--infobox "Installing \`$1\` ($n of $total) from the AUR. $1 $2" 9 70
 	echo "$aurinstalled" | grep -q "^$1$" && return 1
 	sudo -u "$name" $aurhelper -S --noconfirm "$1" >/dev/null 2>&1
@@ -134,9 +129,10 @@ putgitrepo() {
 	sudo -u "$name" cp -rfT "$dir" "$2"
 }
 
-finalize() {
-	whiptail --title "All done!" \
-		--msgbox "Congrats! Provided there were no hidden errors, the script completed successfully and all the programs and configuration files should be in place.\\n\\nTo run the new graphical environment, just reboot.\n\n.t Saqib" 13 80
+finalize(){
+	whiptail --infobox "all done. restart required \\n\\n.t Saqib" 13 80
+
+
 }
 
 ### THE ACTUAL SCRIPT ###
@@ -160,10 +156,6 @@ usercheck || error "User exited."
 preinstallmsg || error "User exited."
 
 ### The rest of the script requires no user input.
-
-# Refresh Arch keyrings.
-refreshkeys ||
-	error "Error automatically refreshing Arch keyring. Consider doing so manually."
 
 for x in curl ca-certificates base-devel git ntp zsh; do
 	whiptail --title "LARBS Installation" \
@@ -193,20 +185,26 @@ sed -i "s/-j2/-j$(nproc)/;/^#MAKEFLAGS/s/^#//" /etc/makepkg.conf
 
 manualinstall yay || error "Failed to install AUR helper."
 
+# The command that does all the installing. Reads the progs.csv file and
+# installs each needed program the way required. Be sure to run this only after
+# the user has been created and has priviledges to run sudo without a password
+# and all build dependencies are installed.
 installationloop
 
+# Install the dotfiles in the user's home directory, but remove .git dir and
+# other unnecessary files.
 putgitrepo "$dotfilesrepo" "/home/$name" "$repobranch"
-rm -rf "/home/$name/.git/"
+rm -rf "/home/$name/.git"
 
-# Make zsh the default shell for the user.
-chsh -s /bin/zsh "$name" >/dev/null 2>&1
+#make zsh default shell
+chsh -s /bin/zsh "$name" > /dev/null 2>&1
 sudo -u "$name" mkdir -p "/home/$name/.cache/zsh/"
 
-# enable services on startup
-systemctl enable bluetooth >/dev/null 2>&1
-systemctl enable auto-cpufreq.service >/dev/null 2>&1
-systemctl enable sddm >/dev/null 2>&1
+# Allow wheel users to sudo with password and allow several system commands
+# (like `shutdown` to run without password).
+echo "%wheel ALL=(ALL:ALL) ALL" >/etc/sudoers.d/00-larbs-wheel-can-sudo
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/pacman -Syyuw --noconfirm,/usr/bin/pacman -S -u -y --config /etc/pacman.conf --,/usr/bin/pacman -S -y -u --config /etc/pacman.conf --" >/etc/sudoers.d/01-sarbs-cmds-without-password
+echo "Defaults editor=/usr/bin/nvim" >/etc/sudoers.d/02-sarbs-visudo-editor
 
-
-#last msg
+#finalize
 finalize
